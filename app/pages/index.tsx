@@ -1,9 +1,6 @@
 import Layout from "@/components/layout";
-import {
-  ExtraLargeLoadingButton,
-  LargeLoadingButton,
-} from "@/components/styled";
-import { Box, SxProps, Typography, Container, Stack } from "@mui/material";
+import { LargeLoadingButton } from "@/components/styled";
+import { Box, Container, Stack, SxProps, Typography } from "@mui/material";
 import Image from "next/image";
 
 /**
