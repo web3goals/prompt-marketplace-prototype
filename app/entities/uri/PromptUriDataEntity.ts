@@ -1,4 +1,5 @@
 export default interface PromptUriDataEntity {
+  created?: number;
   category?: string;
   title?: string;
   description?: string;

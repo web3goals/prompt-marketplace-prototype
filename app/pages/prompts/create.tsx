@@ -23,6 +23,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
   useAccount,
+  useContractEvent,
   useContractWrite,
   useNetwork,
   usePrepareContractWrite,
@@ -94,6 +95,7 @@ export default function CreatePrompt() {
     try {
       setIsFormSubmitting(true);
       const formData: PromptUriDataEntity = {
+        created: new Date().getTime(),
         category: values.category,
         title: values.title,
         description: values.description,
@@ -120,16 +122,24 @@ export default function CreatePrompt() {
   }, [submittedFormDataUri, contractWrite, isContractWriteLoading]);
 
   /**
-   * Handle transaction success to show success message
+   * Listen contract events to open page of created prompt.
    */
-  useEffect(() => {
-    if (isTransactionSuccess) {
-      showToastSuccess("Prompt is created!");
-      setIsFormSubmitting(false);
-      router.push(`/accounts/${address}`);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTransactionSuccess]);
+  useContractEvent({
+    address: chainToSupportedChainPromptContractAddress(chain),
+    abi: promptContractAbi,
+    eventName: "Transfer",
+    listener(log) {
+      console.log("log", log);
+      if (
+        log[0].args.from === ethers.constants.AddressZero &&
+        log[0].args.to === address
+      ) {
+        showToastSuccess("Prompt is created!");
+        setIsFormSubmitting(false);
+        router.push(`/prompts/${log[0].args.tokenId.toString()}`);
+      }
+    },
+  });
 
   /**
    * Form states
