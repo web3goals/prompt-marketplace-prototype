@@ -25,6 +25,7 @@
     "eslint-config-next": "13.4.2",
     "ethers": "^5.0.0",
     "formik": "^2.2.9",
+    "lodash": "^4.17.21",
     "next": "13.4.2",
     "nextjs-progressbar": "^0.0.16",
     "notistack": "^3.0.1",
@@ -38,5 +39,8 @@
     "viem": "^0.3.24",
     "wagmi": "^1.0.4",
     "yup": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.194"
   }
 }

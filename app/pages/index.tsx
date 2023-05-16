@@ -40,10 +40,10 @@ function HeaderSection(props: { sx?: SxProps }) {
       </Typography>
       {/* TODO: Use real links for next buttons */}
       <Stack direction={{ xs: "column", md: "row" }} spacing={2} mt={4}>
-        <LargeLoadingButton variant="contained" href="#">
+        <LargeLoadingButton href="#" variant="contained">
           Find a prompt
         </LargeLoadingButton>
-        <LargeLoadingButton variant="outlined" href="#">
+        <LargeLoadingButton href="/prompts/create" variant="outlined">
           Sell a prompt
         </LargeLoadingButton>
       </Stack>

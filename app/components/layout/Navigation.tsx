@@ -82,7 +82,7 @@ function Links(props: { sx?: SxProps }) {
           Find
         </MuiLink>
       </Link>
-      <Link href="#" passHref legacyBehavior>
+      <Link href="/prompts/create" passHref legacyBehavior>
         <MuiLink
           fontWeight={700}
           color="inherit"
@@ -213,7 +213,7 @@ function NavigationMenu(props: {
           </Link>
         )}
         {props.displaySellLink && (
-          <Link href="#" passHref legacyBehavior>
+          <Link href="/prompts/create" passHref legacyBehavior>
             <MenuItem>Sell</MenuItem>
           </Link>
         )}
