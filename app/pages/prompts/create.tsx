@@ -129,7 +129,6 @@ export default function CreatePrompt() {
     abi: promptContractAbi,
     eventName: "Transfer",
     listener(log) {
-      console.log("log", log);
       if (
         log[0].args.from === ethers.constants.AddressZero &&
         log[0].args.to === address
@@ -221,7 +220,7 @@ export default function CreatePrompt() {
                 helperText={touched.description && errors.description}
                 disabled={isFormDisabled}
                 multiline
-                maxRows={4}
+                maxRows={8}
                 sx={{ width: 1 }}
               />
             </WidgetBox>
@@ -238,7 +237,7 @@ export default function CreatePrompt() {
                 helperText={touched.prompt && errors.prompt}
                 disabled={isFormDisabled}
                 multiline
-                maxRows={4}
+                maxRows={8}
                 sx={{ width: 1 }}
               />
             </WidgetBox>
@@ -255,7 +254,7 @@ export default function CreatePrompt() {
                 helperText={touched.instruction && errors.instruction}
                 disabled={isFormDisabled}
                 multiline
-                maxRows={4}
+                maxRows={8}
                 sx={{ width: 1 }}
               />
             </WidgetBox>
