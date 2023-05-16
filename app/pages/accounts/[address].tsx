@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
  */
 export default function Account() {
   const router = useRouter();
-  const { slug } = router.query;
+  const { address } = router.query;
 
   return <Layout>...</Layout>;
 }
