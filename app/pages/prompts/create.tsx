@@ -3,6 +3,7 @@ import Layout from "@/components/layout";
 import {
   ExtraLargeLoadingButton,
   WidgetBox,
+  WidgetInputSelect,
   WidgetInputTextField,
   WidgetTitle,
 } from "@/components/styled";
@@ -16,7 +17,7 @@ import {
   chainToSupportedChainId,
   chainToSupportedChainPromptContractAddress,
 } from "@/utils/chains";
-import { Typography } from "@mui/material";
+import { MenuItem, Typography } from "@mui/material";
 import { ethers } from "ethers";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -46,7 +47,7 @@ export default function CreatePrompt() {
    * Form states
    */
   const [formValues, setFormValues] = useState({
-    category: "👌 Assistant",
+    category: "🪄 Assistant",
     title: "Forming an order for food delivery",
     description: "Prompt that helps to form an order",
     prompt: "",
@@ -165,7 +166,7 @@ export default function CreatePrompt() {
         validationSchema={formValidationSchema}
         onSubmit={submitForm}
       >
-        {({ values, errors, touched, handleChange, setValues }) => (
+        {({ values, errors, touched, handleChange }) => (
           <Form
             style={{
               width: "100%",
@@ -175,21 +176,24 @@ export default function CreatePrompt() {
             }}
           >
             <FormikHelper onChange={(values: any) => setFormValues(values)} />
-            {/* TODO: Use select input */}
             {/* Category input */}
             <WidgetBox bgcolor={palette.green} mt={2}>
               <WidgetTitle>Category</WidgetTitle>
-              <WidgetInputTextField
+              <WidgetInputSelect
                 id="category"
                 name="category"
                 placeholder=""
                 value={values.category}
                 onChange={handleChange}
-                error={touched.category && Boolean(errors.category)}
-                helperText={touched.category && errors.category}
                 disabled={isFormDisabled}
                 sx={{ width: 1 }}
-              />
+              >
+                <MenuItem value="🪄 Assistant">🪄 Assistant</MenuItem>
+                <MenuItem value="😀 Fun">😀 Fun</MenuItem>
+                <MenuItem value="❤️ Health">❤️ Health</MenuItem>
+                <MenuItem value="💡 Ideas">💡 Ideas</MenuItem>
+                <MenuItem value="🔮 Other">🔮 Other</MenuItem>
+              </WidgetInputSelect>
             </WidgetBox>
             {/* Title input */}
             <WidgetBox bgcolor={palette.purpleDark} mt={2}>

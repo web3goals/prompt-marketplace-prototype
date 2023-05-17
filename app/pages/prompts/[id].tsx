@@ -192,7 +192,7 @@ function PromptData(props: { prompt: TokenDataEntity }) {
       <WidgetBox bgcolor={palette.greyDark} mt={2}>
         <WidgetTitle>Created</WidgetTitle>
         <WidgetText>
-          {timestampToLocaleDateString(promptUriData.created)}
+          {timestampToLocaleDateString(promptUriData.created, true)}
         </WidgetText>
       </WidgetBox>
       {/* Category */}
