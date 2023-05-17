@@ -95,6 +95,7 @@ export default function CreatePrompt() {
     try {
       setIsFormSubmitting(true);
       const formData: PromptUriDataEntity = {
+        author: address,
         created: new Date().getTime(),
         category: values.category,
         title: values.title,

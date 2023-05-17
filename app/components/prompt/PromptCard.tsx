@@ -35,21 +35,28 @@ export default function PromptCard(props: {
 }) {
   const { chain } = useNetwork();
 
-  const { data: ownerProfileUri } = useContractRead({
+  const promptUriData = props.prompt.metadata as PromptUriDataEntity;
+
+  /**
+   * Define author data
+   */
+  const { data: authorProfileUri } = useContractRead({
     address: chainToSupportedChainProfileContractAddress(chain),
     abi: profileContractAbi,
     functionName: "getURI",
-    args: [stringToAddress(props.prompt.owner) || ethers.constants.AddressZero],
+    args: [
+      stringToAddress(promptUriData?.author) || ethers.constants.AddressZero,
+    ],
   });
+  const { data: authorProfileUriData } =
+    useUriDataLoader<ProfileUriDataEntity>(authorProfileUri);
 
-  const { data: ownerProfileUriData } =
-    useUriDataLoader<ProfileUriDataEntity>(ownerProfileUri);
-
+  /**
+   * Define listing
+   */
   const { tokenListing: promptListing } = useTokenListingLoader(
     props.prompt.id
   );
-
-  const promptUriData = props.prompt.metadata as PromptUriDataEntity;
 
   if (!promptUriData) {
     return <></>;
@@ -60,15 +67,15 @@ export default function PromptCard(props: {
       {/* Left part */}
       <Box>
         <AccountAvatar
-          account={props.prompt.owner}
-          accountProfileUriData={ownerProfileUriData}
+          account={promptUriData.author || ethers.constants.AddressZero}
+          accountProfileUriData={authorProfileUriData}
         />
       </Box>
       {/* Right part */}
       <Box width={1} ml={1.5} display="flex" flexDirection="column">
         <AccountLink
-          account={props.prompt.owner}
-          accountProfileUriData={ownerProfileUriData}
+          account={promptUriData.author || ethers.constants.AddressZero}
+          accountProfileUriData={authorProfileUriData}
         />
         {/* Title */}
         <Link href={`/prompts/${props.prompt.id}`} passHref legacyBehavior>

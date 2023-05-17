@@ -54,6 +54,9 @@ export default function Prompt() {
   const { getTokenData } = useInfura();
   const [prompt, setPrompt] = useState<TokenDataEntity | undefined>();
 
+  /**
+   * Define prompt data
+   */
   useEffect(() => {
     setPrompt(undefined);
     if (id) {
@@ -100,21 +103,40 @@ function PromptData(props: { prompt: TokenDataEntity }) {
   const { address } = useAccount();
   const { showDialog, closeDialog } = useContext(DialogContext);
 
+  const promptUriData = props.prompt.metadata as PromptUriDataEntity;
+
+  /**
+   * Define author data
+   */
+  const { data: promptAuthorProfileUri } = useContractRead({
+    address: chainToSupportedChainProfileContractAddress(chain),
+    abi: profileContractAbi,
+    functionName: "getURI",
+    args: [
+      stringToAddress(promptUriData.author) || ethers.constants.AddressZero,
+    ],
+  });
+  const { data: promptAuthorProfileUriData } =
+    useUriDataLoader<ProfileUriDataEntity>(promptAuthorProfileUri);
+
+  /**
+   * Define owner data
+   */
   const { data: promptOwnerProfileUri } = useContractRead({
     address: chainToSupportedChainProfileContractAddress(chain),
     abi: profileContractAbi,
     functionName: "getURI",
     args: [stringToAddress(props.prompt.owner) || ethers.constants.AddressZero],
   });
-
   const { data: promptOwnerProfileUriData } =
     useUriDataLoader<ProfileUriDataEntity>(promptOwnerProfileUri);
 
+  /**
+   * Define listing
+   */
   const { tokenListing: promptListing } = useTokenListingLoader(
     props.prompt.id
   );
-
-  const promptUriData = props.prompt.metadata as PromptUriDataEntity;
 
   if (!promptUriData) {
     return <></>;
@@ -128,8 +150,27 @@ function PromptData(props: { prompt: TokenDataEntity }) {
       <Typography textAlign="center" mt={1}>
         that can change the world for the better
       </Typography>
-      {/* Owner */}
+      {/* Author */}
       <WidgetBox bgcolor={palette.greyDark} mt={2}>
+        <WidgetTitle>Author</WidgetTitle>
+        <WidgetContentBox
+          display="flex"
+          flexDirection="column"
+          alignItems={{ xs: "center", md: "flex-start" }}
+        >
+          <AccountAvatar
+            account={promptUriData.author || ethers.constants.AddressZero}
+            accountProfileUriData={promptAuthorProfileUriData}
+          />
+          <AccountLink
+            account={promptUriData.author || ethers.constants.AddressZero}
+            accountProfileUriData={promptAuthorProfileUriData}
+            sx={{ mt: 1 }}
+          />
+        </WidgetContentBox>
+      </WidgetBox>
+      {/* Owner */}
+      <WidgetBox bgcolor={palette.greyLight} mt={2}>
         <WidgetTitle>Owner</WidgetTitle>
         <WidgetContentBox
           display="flex"
@@ -148,7 +189,7 @@ function PromptData(props: { prompt: TokenDataEntity }) {
         </WidgetContentBox>
       </WidgetBox>
       {/* Created */}
-      <WidgetBox bgcolor={palette.greyLight} mt={2}>
+      <WidgetBox bgcolor={palette.greyDark} mt={2}>
         <WidgetTitle>Created</WidgetTitle>
         <WidgetText>
           {timestampToLocaleDateString(promptUriData.created)}
