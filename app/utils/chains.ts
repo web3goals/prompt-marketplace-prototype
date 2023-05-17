@@ -6,6 +6,7 @@ interface ChainConfig {
   contractAddresses: {
     profile: string;
     prompt: string;
+    marketplace: string;
   };
 }
 
@@ -16,13 +17,15 @@ export function getSupportedChainConfigs(): ChainConfig[] {
   const chainConfigs: ChainConfig[] = [];
   if (
     process.env.NEXT_PUBLIC_MUMBAI_PROFILE_CONTRACT_ADDRESS &&
-    process.env.NEXT_PUBLIC_MUMBAI_PROMPT_CONTRACT_ADDRESS
+    process.env.NEXT_PUBLIC_MUMBAI_PROMPT_CONTRACT_ADDRESS &&
+    process.env.NEXT_PUBLIC_MUMBAI_MARKEPLACE_CONTRACT_ADDRESS
   ) {
     chainConfigs.push({
       chain: polygonMumbai,
       contractAddresses: {
         profile: process.env.NEXT_PUBLIC_MUMBAI_PROFILE_CONTRACT_ADDRESS,
         prompt: process.env.NEXT_PUBLIC_MUMBAI_PROMPT_CONTRACT_ADDRESS,
+        marketplace: process.env.NEXT_PUBLIC_MUMBAI_MARKEPLACE_CONTRACT_ADDRESS,
       },
     });
   }
@@ -99,5 +102,16 @@ export function chainToSupportedChainPromptContractAddress(
 ): `0x${string}` | undefined {
   return stringToAddress(
     chainToSupportedChainConfig(chain).contractAddresses.prompt
+  );
+}
+
+/**
+ * Return marketplace contract address of specified chain if it supported, otherwise return value from default supported chain.
+ */
+export function chainToSupportedChainMarketplaceContractAddress(
+  chain: Chain | undefined
+): `0x${string}` | undefined {
+  return stringToAddress(
+    chainToSupportedChainConfig(chain).contractAddresses.marketplace
   );
 }

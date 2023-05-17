@@ -1,6 +1,9 @@
 import AccountAvatar from "@/components/account/AccountAvatar";
 import AccountLink from "@/components/account/AccountLink";
 import FormikHelper from "@/components/helper/FormikHelper";
+import PromptBuyDialog from "@/components/prompt/PromptBuyDialog";
+import PromptSellDialog from "@/components/prompt/PromptSellDialog";
+import PromptShowDialog from "@/components/prompt/PromptShowDialog";
 import {
   CardBox,
   FullWidthSkeleton,
@@ -12,22 +15,21 @@ import {
   WidgetText,
   WidgetTitle,
 } from "@/components/styled";
+import { DialogContext } from "@/context/dialog";
 import PromptUriDataEntity from "@/entities/uri/PromptUriDataEntity";
 import useError from "@/hooks/useError";
-import useInfura from "@/hooks/useInfura";
+import usePromptLoader from "@/hooks/usePromptLoader";
 import { palette } from "@/theme/palette";
-import {
-  chainToSupportedChainId,
-  chainToSupportedChainPromptContractAddress,
-} from "@/utils/chains";
+import { isAddressesEqual } from "@/utils/addresses";
+import { chainToSupportedChainNativeCurrencySymbol } from "@/utils/chains";
 import { Avatar, Box, Stack, Typography } from "@mui/material";
 import axios from "axios";
 import Layout from "components/layout";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { timestampToLocaleDateString } from "utils/converters";
-import { useNetwork } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 import * as yup from "yup";
 
 /**
@@ -36,44 +38,22 @@ import * as yup from "yup";
 export default function Prompt() {
   const router = useRouter();
   const { id } = router.query;
-  const { chain } = useNetwork();
-  const { handleError } = useError();
-  const { getTokenData } = useInfura();
-  const [promptData, setPromptData] = useState<
-    | { owner: string | undefined; uriData: PromptUriDataEntity | undefined }
-    | undefined
-  >();
-
-  /**
-   * Load prompt data
-   */
-  useEffect(() => {
-    if (id) {
-      getTokenData(
-        chainToSupportedChainId(chain)!,
-        chainToSupportedChainPromptContractAddress(chain)!,
-        id.toString()
-      )
-        .then((data) =>
-          setPromptData({ owner: data.owner, uriData: data.metadata })
-        )
-        .catch((error) => handleError(error, true));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  const { isLoaded, owner, uriData, listing } = usePromptLoader(id?.toString());
 
   return (
     <Layout maxWidth="sm">
-      {id && promptData ? (
-        promptData.owner && promptData.uriData ? (
+      {id && isLoaded ? (
+        owner && uriData ? (
           <>
             <PromptData
               id={id.toString()}
-              owner={promptData.owner}
-              uriData={promptData.uriData}
+              owner={owner}
+              uriData={uriData}
+              listingPrice={listing?.price}
+              listingMarketplaceId={listing?.marketplaceId}
             />
             <ThickDivider sx={{ mt: 8, mb: 8 }} />
-            <PromptSandbox uriData={promptData.uriData} />
+            <PromptSandbox uriData={uriData} />
           </>
         ) : (
           <>
@@ -97,7 +77,13 @@ function PromptData(props: {
   id: string;
   owner: string;
   uriData: PromptUriDataEntity;
+  listingPrice: string | undefined;
+  listingMarketplaceId: string | undefined;
 }) {
+  const { chain } = useNetwork();
+  const { address } = useAccount();
+  const { showDialog, closeDialog } = useContext(DialogContext);
+
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
       <Typography variant="h4" fontWeight={700} textAlign="center">
@@ -148,9 +134,69 @@ function PromptData(props: {
         <WidgetText>{props.uriData.description}</WidgetText>
       </WidgetBox>
       {/* Price */}
-      {/* TODO: Display price prompt is for sale */}
+      {props.listingPrice && (
+        <WidgetBox bgcolor={palette.orange} mt={2}>
+          <WidgetTitle>Price</WidgetTitle>
+          <Stack direction="row" spacing={1}>
+            <WidgetText>{props.listingPrice}</WidgetText>
+            <WidgetText>
+              {chainToSupportedChainNativeCurrencySymbol(chain)}
+            </WidgetText>
+          </Stack>
+        </WidgetBox>
+      )}
       {/* Buttons */}
-      {/* TODO: Display buttons */}
+      <Stack direction="column" spacing={2} mt={2}>
+        {!isAddressesEqual(address, props.owner) && (
+          <LargeLoadingButton
+            variant="contained"
+            disabled={!Boolean(props.listingPrice)}
+            onClick={() => {
+              if (props.listingPrice && props.listingMarketplaceId) {
+                showDialog?.(
+                  <PromptBuyDialog
+                    id={props.id}
+                    listingPrice={props.listingPrice}
+                    listingMarketplaceId={props.listingMarketplaceId}
+                    onClose={closeDialog}
+                  />
+                );
+              }
+            }}
+          >
+            Buy
+          </LargeLoadingButton>
+        )}
+        {isAddressesEqual(address, props.owner) && (
+          <LargeLoadingButton
+            variant="contained"
+            disabled={Boolean(props.listingPrice)}
+            onClick={() =>
+              showDialog?.(
+                <PromptSellDialog id={props.id} onClose={closeDialog} />
+              )
+            }
+          >
+            Sell
+          </LargeLoadingButton>
+        )}
+        {isAddressesEqual(address, props.owner) && (
+          <LargeLoadingButton
+            variant="outlined"
+            onClick={() =>
+              showDialog?.(
+                <PromptShowDialog
+                  id={props.id}
+                  uriData={props.uriData}
+                  onClose={closeDialog}
+                />
+              )
+            }
+          >
+            Show
+          </LargeLoadingButton>
+        )}
+      </Stack>
     </Box>
   );
 }

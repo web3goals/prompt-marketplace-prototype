@@ -5,7 +5,9 @@ export function errorToPrettyError(error: any): {
   message: string;
   severity: "info" | "error" | undefined;
 } {
-  let message = JSON.stringify(error);
+  let message = JSON.stringify(error, (key, value) =>
+    typeof value === "bigint" ? value.toString() : value
+  );
   let severity: "info" | "error" | undefined = undefined;
   if (error?.message) {
     message = error.message;
