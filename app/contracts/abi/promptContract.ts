@@ -1,3 +1,5 @@
+// Source: @infura/sdk/src/lib/ContractTemplates/artifacts/ERC721Mintable
+
 export const promptContractAbi = [
   {
     inputs: [
