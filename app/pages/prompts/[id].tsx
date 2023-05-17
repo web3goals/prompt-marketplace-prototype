@@ -36,7 +36,7 @@ import axios from "axios";
 import Layout from "components/layout";
 import { ethers } from "ethers";
 import { Form, Formik } from "formik";
-import useInfura from "hooks/useInfura";
+import useTokenDataLoader from "@/hooks/useTokenDataLoader";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import { stringToAddress, timestampToLocaleDateString } from "utils/converters";
@@ -51,7 +51,7 @@ export default function Prompt() {
   const { id } = router.query;
   const { chain } = useNetwork();
   const { handleError } = useError();
-  const { getTokenData } = useInfura();
+  const { getTokenData } = useTokenDataLoader();
   const [prompt, setPrompt] = useState<TokenDataEntity | undefined>();
 
   /**

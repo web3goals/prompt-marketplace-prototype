@@ -4,7 +4,7 @@ import PromptCard from "@/components/prompt/PromptCard";
 import { LargeLoadingButton } from "@/components/styled";
 import TokenDataEntity from "@/entities/TokenDataEntity";
 import useError from "@/hooks/useError";
-import useInfura from "@/hooks/useInfura";
+import useTokenDataLoader from "@/hooks/useTokenDataLoader";
 import {
   chainToSupportedChainId,
   chainToSupportedChainPromptContractAddress,
@@ -100,7 +100,7 @@ function QuoteSection(props: { sx?: SxProps }) {
 function PromptsSection(props: { sx?: SxProps }) {
   const { chain } = useNetwork();
   const { handleError } = useError();
-  const { getTokenDataList } = useInfura();
+  const { getTokenDataList } = useTokenDataLoader();
   const [prompts, setPrompts] = useState<TokenDataEntity[] | undefined>();
 
   useEffect(() => {

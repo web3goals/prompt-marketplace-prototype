@@ -2,11 +2,9 @@ import TokenDataEntity from "@/entities/TokenDataEntity";
 import axios from "axios";
 
 /**
- * Hook for work with Infura SDK.
- *
- * TODO: Rename to "useTokenDataLoader"
+ * Load token data.
  */
-export default function useInfura() {
+export default function useTokenDataLoader() {
   const Auth = Buffer.from(
     process.env.NEXT_PUBLIC_INFURA_API_KEY +
       ":" +
