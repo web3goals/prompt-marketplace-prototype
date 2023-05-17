@@ -1,7 +1,10 @@
+import TokenDataEntity from "@/entities/TokenDataEntity";
 import axios from "axios";
 
 /**
  * Hook for work with Infura SDK.
+ *
+ * TODO: Rename to "useTokenDataLoader"
  */
 export default function useInfura() {
   const Auth = Buffer.from(
@@ -14,10 +17,7 @@ export default function useInfura() {
     chainId: number,
     tokenAddress: string,
     tokenId: string
-  ): Promise<{
-    owner: string;
-    metadata: any;
-  }> {
+  ): Promise<TokenDataEntity> {
     const { data } = await axios.get(
       `https://nft.api.infura.io/networks/${chainId}/nfts/${tokenAddress}/${tokenId}/owners`,
       {
@@ -27,12 +27,37 @@ export default function useInfura() {
       }
     );
     return {
+      id: data.owners[0].tokenId,
       owner: data.owners[0].ownerOf,
       metadata: JSON.parse(data.owners[0].metadata),
     };
   };
 
+  const getTokenDataList = async function (
+    chainId: number,
+    tokenAddress: string
+  ): Promise<TokenDataEntity[]> {
+    const tokenDataList: TokenDataEntity[] = [];
+    const { data } = await axios.get(
+      `https://nft.api.infura.io/networks/${chainId}/nfts/${tokenAddress}/owners`,
+      {
+        headers: {
+          Authorization: `Basic ${Auth}`,
+        },
+      }
+    );
+    for (let i = 0; i < data.owners.length; i++) {
+      tokenDataList.push({
+        id: data.owners[i].tokenId,
+        owner: data.owners[i].ownerOf,
+        metadata: JSON.parse(data.owners[i].metadata),
+      });
+    }
+    return tokenDataList;
+  };
+
   return {
     getTokenData,
+    getTokenDataList,
   };
 }

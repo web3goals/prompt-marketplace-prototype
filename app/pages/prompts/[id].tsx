@@ -17,24 +17,28 @@ import {
 } from "@/components/styled";
 import { DialogContext } from "@/context/dialog";
 import { profileContractAbi } from "@/contracts/abi/profileContract";
+import TokenDataEntity from "@/entities/TokenDataEntity";
 import ProfileUriDataEntity from "@/entities/uri/ProfileUriDataEntity";
 import PromptUriDataEntity from "@/entities/uri/PromptUriDataEntity";
 import useError from "@/hooks/useError";
-import usePromptLoader from "@/hooks/usePromptLoader";
+import useTokenListingLoader from "@/hooks/useTokenListingLoader";
 import useUriDataLoader from "@/hooks/useUriDataLoader";
 import { palette } from "@/theme/palette";
 import { isAddressesEqual } from "@/utils/addresses";
 import {
+  chainToSupportedChainId,
   chainToSupportedChainNativeCurrencySymbol,
   chainToSupportedChainProfileContractAddress,
+  chainToSupportedChainPromptContractAddress,
 } from "@/utils/chains";
 import { Avatar, Box, Stack, Typography } from "@mui/material";
 import axios from "axios";
 import Layout from "components/layout";
 import { ethers } from "ethers";
 import { Form, Formik } from "formik";
+import useInfura from "hooks/useInfura";
 import { useRouter } from "next/router";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { stringToAddress, timestampToLocaleDateString } from "utils/converters";
 import { useAccount, useContractRead, useNetwork } from "wagmi";
 import * as yup from "yup";
@@ -45,22 +49,33 @@ import * as yup from "yup";
 export default function Prompt() {
   const router = useRouter();
   const { id } = router.query;
-  const { isLoaded, owner, uriData, listing } = usePromptLoader(id?.toString());
+  const { chain } = useNetwork();
+  const { handleError } = useError();
+  const { getTokenData } = useInfura();
+  const [prompt, setPrompt] = useState<TokenDataEntity | undefined>();
+
+  useEffect(() => {
+    setPrompt(undefined);
+    if (id) {
+      getTokenData(
+        chainToSupportedChainId(chain)!,
+        chainToSupportedChainPromptContractAddress(chain)!,
+        id.toString()
+      )
+        .then((tokenData) => setPrompt(tokenData))
+        .catch((error) => handleError(error, true));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   return (
     <Layout maxWidth="sm">
-      {id && isLoaded ? (
-        owner && uriData ? (
+      {id && prompt ? (
+        prompt.metadata ? (
           <>
-            <PromptData
-              id={id.toString()}
-              owner={owner}
-              uriData={uriData}
-              listingPrice={listing?.price}
-              listingMarketplaceId={listing?.marketplaceId}
-            />
+            <PromptData prompt={prompt} />
             <ThickDivider sx={{ mt: 8, mb: 8 }} />
-            <PromptSandbox uriData={uriData} />
+            <PromptSandbox prompt={prompt} />
           </>
         ) : (
           <>
@@ -68,7 +83,7 @@ export default function Prompt() {
               🤔 Hmm...
             </Typography>
             <Typography textAlign="center" mt={1}>
-              It seems that the prompt data is not ready now, try to open it
+              It seems that the prompt metadata is not ready now, try to open it
               later
             </Typography>
           </>
@@ -80,31 +95,35 @@ export default function Prompt() {
   );
 }
 
-function PromptData(props: {
-  id: string;
-  owner: string;
-  uriData: PromptUriDataEntity;
-  listingPrice: string | undefined;
-  listingMarketplaceId: string | undefined;
-}) {
+function PromptData(props: { prompt: TokenDataEntity }) {
   const { chain } = useNetwork();
   const { address } = useAccount();
   const { showDialog, closeDialog } = useContext(DialogContext);
 
-  const { data: ownerProfileUri } = useContractRead({
+  const { data: promptOwnerProfileUri } = useContractRead({
     address: chainToSupportedChainProfileContractAddress(chain),
     abi: profileContractAbi,
     functionName: "getURI",
-    args: [stringToAddress(props.owner) || ethers.constants.AddressZero],
+    args: [stringToAddress(props.prompt.owner) || ethers.constants.AddressZero],
   });
 
-  const { data: ownerProfileUriData } =
-    useUriDataLoader<ProfileUriDataEntity>(ownerProfileUri);
+  const { data: promptOwnerProfileUriData } =
+    useUriDataLoader<ProfileUriDataEntity>(promptOwnerProfileUri);
+
+  const { tokenListing: promptListing } = useTokenListingLoader(
+    props.prompt.id
+  );
+
+  const promptUriData = props.prompt.metadata as PromptUriDataEntity;
+
+  if (!promptUriData) {
+    return <></>;
+  }
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
       <Typography variant="h4" fontWeight={700} textAlign="center">
-        🤖 Prompt #{props.id}
+        🤖 Prompt #{props.prompt.id}
       </Typography>
       <Typography textAlign="center" mt={1}>
         that can change the world for the better
@@ -118,12 +137,12 @@ function PromptData(props: {
           alignItems={{ xs: "center", md: "flex-start" }}
         >
           <AccountAvatar
-            account={props.owner}
-            accountProfileUriData={ownerProfileUriData}
+            account={props.prompt.owner}
+            accountProfileUriData={promptOwnerProfileUriData}
           />
           <AccountLink
-            account={props.owner}
-            accountProfileUriData={ownerProfileUriData}
+            account={props.prompt.owner}
+            accountProfileUriData={promptOwnerProfileUriData}
             sx={{ mt: 1 }}
           />
         </WidgetContentBox>
@@ -132,30 +151,30 @@ function PromptData(props: {
       <WidgetBox bgcolor={palette.greyLight} mt={2}>
         <WidgetTitle>Created</WidgetTitle>
         <WidgetText>
-          {timestampToLocaleDateString(props.uriData.created)}
+          {timestampToLocaleDateString(promptUriData.created)}
         </WidgetText>
       </WidgetBox>
       {/* Category */}
       <WidgetBox bgcolor={palette.green} mt={2}>
         <WidgetTitle>Category</WidgetTitle>
-        <WidgetText>{props.uriData.category}</WidgetText>
+        <WidgetText>{promptUriData.category}</WidgetText>
       </WidgetBox>
       {/* Title */}
       <WidgetBox bgcolor={palette.purpleDark} mt={2}>
         <WidgetTitle>Title</WidgetTitle>
-        <WidgetText>{props.uriData.title}</WidgetText>
+        <WidgetText>{promptUriData.title}</WidgetText>
       </WidgetBox>
       {/* Description */}
       <WidgetBox bgcolor={palette.purpleLight} mt={2}>
         <WidgetTitle>Description</WidgetTitle>
-        <WidgetText>{props.uriData.description}</WidgetText>
+        <WidgetText>{promptUriData.description}</WidgetText>
       </WidgetBox>
       {/* Price */}
-      {props.listingPrice && (
+      {promptListing && (
         <WidgetBox bgcolor={palette.orange} mt={2}>
           <WidgetTitle>Price</WidgetTitle>
           <Stack direction="row" spacing={1}>
-            <WidgetText>{props.listingPrice}</WidgetText>
+            <WidgetText>{promptListing.price}</WidgetText>
             <WidgetText>
               {chainToSupportedChainNativeCurrencySymbol(chain)}
             </WidgetText>
@@ -164,17 +183,17 @@ function PromptData(props: {
       )}
       {/* Buttons */}
       <Stack direction="column" spacing={2} mt={2}>
-        {!isAddressesEqual(address, props.owner) && (
+        {!isAddressesEqual(address, props.prompt.owner) && (
           <LargeLoadingButton
             variant="contained"
-            disabled={!Boolean(props.listingPrice)}
+            disabled={!Boolean(promptListing)}
             onClick={() => {
-              if (props.listingPrice && props.listingMarketplaceId) {
+              if (promptListing) {
                 showDialog?.(
                   <PromptBuyDialog
-                    id={props.id}
-                    listingPrice={props.listingPrice}
-                    listingMarketplaceId={props.listingMarketplaceId}
+                    id={props.prompt.id}
+                    listingPrice={promptListing.price}
+                    listingMarketplaceId={promptListing.marketplaceId}
                     onClose={closeDialog}
                   />
                 );
@@ -184,27 +203,27 @@ function PromptData(props: {
             Buy
           </LargeLoadingButton>
         )}
-        {isAddressesEqual(address, props.owner) && (
+        {isAddressesEqual(address, props.prompt.owner) && (
           <LargeLoadingButton
             variant="contained"
-            disabled={Boolean(props.listingPrice)}
+            disabled={Boolean(promptListing)}
             onClick={() =>
               showDialog?.(
-                <PromptSellDialog id={props.id} onClose={closeDialog} />
+                <PromptSellDialog id={props.prompt.id} onClose={closeDialog} />
               )
             }
           >
             Sell
           </LargeLoadingButton>
         )}
-        {isAddressesEqual(address, props.owner) && (
+        {isAddressesEqual(address, props.prompt.owner) && (
           <LargeLoadingButton
             variant="outlined"
             onClick={() =>
               showDialog?.(
                 <PromptShowDialog
-                  id={props.id}
-                  uriData={props.uriData}
+                  id={props.prompt.id}
+                  uriData={promptUriData}
                   onClose={closeDialog}
                 />
               )
@@ -218,15 +237,16 @@ function PromptData(props: {
   );
 }
 
-function PromptSandbox(props: { uriData: PromptUriDataEntity }) {
+function PromptSandbox(props: { prompt: TokenDataEntity }) {
   interface Message {
     role: "system" | "assistant" | "user";
     content: string;
   }
 
+  const promptUriData = props.prompt.metadata as PromptUriDataEntity;
   const { handleError } = useError();
   const [messages, setMessages] = useState<Message[]>([
-    { role: "system", content: props.uriData.prompt || "" },
+    { role: "system", content: promptUriData.prompt || "" },
   ]);
 
   /**
@@ -272,6 +292,10 @@ function PromptSandbox(props: { uriData: PromptUriDataEntity }) {
     } finally {
       setIsFormSubmitting(false);
     }
+  }
+
+  if (!promptUriData) {
+    return <></>;
   }
 
   return (
@@ -323,7 +347,7 @@ function PromptSandbox(props: { uriData: PromptUriDataEntity }) {
               disabled={isFormSubmitting}
               sx={{ mt: 2 }}
             >
-              Submit
+              Post
             </LargeLoadingButton>
           </Form>
         )}

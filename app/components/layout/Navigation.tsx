@@ -67,13 +67,12 @@ function Logo(props: { sx?: SxProps }) {
   );
 }
 
-// TODO: Use real links
 function Links(props: { sx?: SxProps }) {
   const { isConnected, address } = useAccount();
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", ...props.sx }}>
-      <Link href="#" passHref legacyBehavior>
+      <Link href="/#prompts" passHref legacyBehavior>
         <MuiLink
           fontWeight={700}
           color="inherit"
@@ -92,7 +91,7 @@ function Links(props: { sx?: SxProps }) {
           Sell
         </MuiLink>
       </Link>
-      <Link href="#" passHref legacyBehavior>
+      <Link href="/top" passHref legacyBehavior>
         <MuiLink
           fontWeight={700}
           color="inherit"
@@ -141,7 +140,6 @@ function Links(props: { sx?: SxProps }) {
   );
 }
 
-// TODO: Use real links
 function NavigationMenu(props: {
   displayAccountLink?: boolean;
   displayFindLink?: boolean;
@@ -208,7 +206,7 @@ function NavigationMenu(props: {
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
         {props.displayFindLink && (
-          <Link href="#" passHref legacyBehavior>
+          <Link href="/#prompts" passHref legacyBehavior>
             <MenuItem>Find</MenuItem>
           </Link>
         )}
@@ -218,7 +216,7 @@ function NavigationMenu(props: {
           </Link>
         )}
         {props.displayTopLink && (
-          <Link href="#" passHref legacyBehavior>
+          <Link href="/top" passHref legacyBehavior>
             <MenuItem>Top authors</MenuItem>
           </Link>
         )}

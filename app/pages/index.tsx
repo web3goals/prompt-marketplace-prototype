@@ -1,7 +1,18 @@
+import EntityList from "@/components/entity/EntityList";
 import Layout from "@/components/layout";
+import PromptCard from "@/components/prompt/PromptCard";
 import { LargeLoadingButton } from "@/components/styled";
+import TokenDataEntity from "@/entities/TokenDataEntity";
+import useError from "@/hooks/useError";
+import useInfura from "@/hooks/useInfura";
+import {
+  chainToSupportedChainId,
+  chainToSupportedChainPromptContractAddress,
+} from "@/utils/chains";
 import { Box, Container, Stack, SxProps, Typography } from "@mui/material";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useNetwork } from "wagmi";
 
 /**
  * Landing page.
@@ -11,6 +22,7 @@ export default function Landing() {
     <Layout maxWidth={false} disableGutters={true}>
       <HeaderSection sx={{ mt: { md: 4 } }} />
       <QuoteSection />
+      <PromptsSection sx={{ mt: { xs: 6, md: 12 } }} />
     </Layout>
   );
 }
@@ -38,9 +50,8 @@ function HeaderSection(props: { sx?: SxProps }) {
       >
         Web3 marketplace of prompts for GPT, ChatGPT, Bard and other LLM
       </Typography>
-      {/* TODO: Use real links for next buttons */}
       <Stack direction={{ xs: "column", md: "row" }} spacing={2} mt={4}>
-        <LargeLoadingButton href="#" variant="contained">
+        <LargeLoadingButton href="/#prompts" variant="contained">
           Find a prompt
         </LargeLoadingButton>
         <LargeLoadingButton href="/prompts/create" variant="outlined">
@@ -83,5 +94,59 @@ function QuoteSection(props: { sx?: SxProps }) {
         </Typography>
       </Container>
     </Box>
+  );
+}
+
+function PromptsSection(props: { sx?: SxProps }) {
+  const { chain } = useNetwork();
+  const { handleError } = useError();
+  const { getTokenDataList } = useInfura();
+  const [prompts, setPrompts] = useState<TokenDataEntity[] | undefined>();
+
+  useEffect(() => {
+    getTokenDataList(
+      chainToSupportedChainId(chain)!,
+      chainToSupportedChainPromptContractAddress(chain)!
+    )
+      .then((tokenDataList) => setPrompts(tokenDataList))
+      .catch((error) => handleError(error, true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <Container
+      maxWidth="md"
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        ...props.sx,
+      }}
+    >
+      <Box
+        id="prompts"
+        component="a"
+        sx={{
+          display: "block",
+          position: "relative",
+          top: "-98px",
+          visibility: "hidden",
+        }}
+      />
+      <Typography variant="h4" fontWeight={700} textAlign="center">
+        ✨ Prompts
+      </Typography>
+      <Typography textAlign="center" mt={1}>
+        that can change the world for the better
+      </Typography>
+      <EntityList
+        entities={prompts}
+        renderEntityCard={(prompt, index) => (
+          <PromptCard key={index} prompt={prompt} />
+        )}
+        noEntitiesText="😐 no prompts"
+        sx={{ mt: 4 }}
+      />
+    </Container>
   );
 }
