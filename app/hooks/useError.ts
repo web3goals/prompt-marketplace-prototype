@@ -1,4 +1,3 @@
-import { useNetwork } from "wagmi";
 import useToast from "./useToast";
 
 /**
@@ -6,7 +5,6 @@ import useToast from "./useToast";
  */
 export default function useError() {
   const { showToastError } = useToast();
-  const { chain } = useNetwork();
 
   let handleError = function (error: Error, isErrorToastRequired: boolean) {
     console.error(error);

@@ -1,3 +1,4 @@
+import AccountProfile from "@/components/account/AccountProfile";
 import Layout from "components/layout";
 import { useRouter } from "next/router";
 
@@ -8,5 +9,9 @@ export default function Account() {
   const router = useRouter();
   const { address } = router.query;
 
-  return <Layout>...</Layout>;
+  return (
+    <Layout>
+      {address && <AccountProfile address={address.toString()} />}
+    </Layout>
+  );
 }

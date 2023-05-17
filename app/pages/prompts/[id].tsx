@@ -16,20 +16,27 @@ import {
   WidgetTitle,
 } from "@/components/styled";
 import { DialogContext } from "@/context/dialog";
+import { profileContractAbi } from "@/contracts/abi/profileContract";
+import ProfileUriDataEntity from "@/entities/uri/ProfileUriDataEntity";
 import PromptUriDataEntity from "@/entities/uri/PromptUriDataEntity";
 import useError from "@/hooks/useError";
 import usePromptLoader from "@/hooks/usePromptLoader";
+import useUriDataLoader from "@/hooks/useUriDataLoader";
 import { palette } from "@/theme/palette";
 import { isAddressesEqual } from "@/utils/addresses";
-import { chainToSupportedChainNativeCurrencySymbol } from "@/utils/chains";
+import {
+  chainToSupportedChainNativeCurrencySymbol,
+  chainToSupportedChainProfileContractAddress,
+} from "@/utils/chains";
 import { Avatar, Box, Stack, Typography } from "@mui/material";
 import axios from "axios";
 import Layout from "components/layout";
+import { ethers } from "ethers";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useContext, useState } from "react";
-import { timestampToLocaleDateString } from "utils/converters";
-import { useAccount, useNetwork } from "wagmi";
+import { stringToAddress, timestampToLocaleDateString } from "utils/converters";
+import { useAccount, useContractRead, useNetwork } from "wagmi";
 import * as yup from "yup";
 
 /**
@@ -84,6 +91,16 @@ function PromptData(props: {
   const { address } = useAccount();
   const { showDialog, closeDialog } = useContext(DialogContext);
 
+  const { data: ownerProfileUri } = useContractRead({
+    address: chainToSupportedChainProfileContractAddress(chain),
+    abi: profileContractAbi,
+    functionName: "getURI",
+    args: [stringToAddress(props.owner) || ethers.constants.AddressZero],
+  });
+
+  const { data: ownerProfileUriData } =
+    useUriDataLoader<ProfileUriDataEntity>(ownerProfileUri);
+
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
       <Typography variant="h4" fontWeight={700} textAlign="center">
@@ -102,11 +119,11 @@ function PromptData(props: {
         >
           <AccountAvatar
             account={props.owner}
-            accountProfileUriData={undefined} // TODO: Load profile uri data
+            accountProfileUriData={ownerProfileUriData}
           />
           <AccountLink
             account={props.owner}
-            accountProfileUriData={undefined} // TODO: Load profile uri data
+            accountProfileUriData={ownerProfileUriData}
             sx={{ mt: 1 }}
           />
         </WidgetContentBox>
