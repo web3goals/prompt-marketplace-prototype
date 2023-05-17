@@ -16,6 +16,9 @@ async function main() {
   );
   await contract.deployed();
   console.log(`✅ Contract deployed to ${contract.address}`);
+  console.log(
+    `⚠️ Do not forget to grant admin role for this contract in the prompt contract`
+  );
 }
 
 main().catch((error) => {
