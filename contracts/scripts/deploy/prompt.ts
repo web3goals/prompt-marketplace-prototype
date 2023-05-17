@@ -1,7 +1,7 @@
 import { Auth, SDK, TEMPLATES, Metadata } from "@infura/sdk";
 
 async function main() {
-  console.log("Start to deploy prompt contract to mumbai");
+  console.log("👟 Start deploy prompt contract to mumbai");
 
   // Create auth
   const auth = new Auth({
@@ -25,16 +25,14 @@ async function main() {
     image: "ipfs://QmYhx98JuMsxZz6foLKB1eevopnSxKhLGQTBu48R35vDRs",
     external_link: "https://prompt-marketplace-app.vercel.app/",
   });
-  console.log("collectionMetadata:", collectionMetadata);
 
   // Upload collection metadata to IPFS
   const storeMetadata = await sdk.storeMetadata({
     metadata: collectionMetadata,
   });
-  console.log("storeMetadata:", storeMetadata);
 
   // Deploy contract
-  const newContract = await sdk.deploy({
+  const contract = await sdk.deploy({
     template: TEMPLATES.ERC721Mintable,
     params: {
       name: "Prompt Markeplace - Prompts",
@@ -42,7 +40,7 @@ async function main() {
       contractURI: storeMetadata,
     },
   });
-  console.log(`Contract address is: ${newContract.contractAddress}`);
+  console.log(`✅ Contract deployed to ${contract.contractAddress}`);
 }
 
 main().catch((error) => {
