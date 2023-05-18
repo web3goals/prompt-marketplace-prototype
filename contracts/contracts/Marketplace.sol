@@ -6,12 +6,16 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
+/**
+ * A contract to sell and buy items.
+ */
 contract Marketplace is ReentrancyGuard, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private marketplaceIds;
     Counters.Counter private totalMarketplaceItemsSold;
 
     mapping(uint => Listing) private marketplaceIdToListingItem;
+    Seller[] private sellers;
 
     struct Listing {
         uint marketplaceId;
@@ -20,6 +24,11 @@ contract Marketplace is ReentrancyGuard, Ownable {
         address payable seller;
         address payable owner;
         uint listPrice;
+    }
+
+    struct Seller {
+        address sellerAddress;
+        uint soldListings;
     }
 
     event ListingCreated(
@@ -56,6 +65,10 @@ contract Marketplace is ReentrancyGuard, Ownable {
             address(0),
             price
         );
+        if (!isSellerExists(msg.sender)) {
+            Seller memory seller = Seller(msg.sender, 0);
+            sellers.push(seller);
+        }
     }
 
     function buyListing(
@@ -76,6 +89,14 @@ contract Marketplace is ReentrancyGuard, Ownable {
             msg.sender
         );
         totalMarketplaceItemsSold.increment();
+        for (uint i = 0; i < sellers.length; i++) {
+            if (
+                sellers[i].sellerAddress ==
+                marketplaceIdToListingItem[marketplaceItemId].seller
+            ) {
+                sellers[i].soldListings++;
+            }
+        }
     }
 
     function getListing(
@@ -116,5 +137,20 @@ contract Marketplace is ReentrancyGuard, Ownable {
             }
         }
         return items;
+    }
+
+    function getSellers() public view returns (Seller[] memory) {
+        return sellers;
+    }
+
+    function isSellerExists(
+        address sellerAddress
+    ) internal view returns (bool) {
+        for (uint i = 0; i < sellers.length; i++) {
+            if (sellers[i].sellerAddress == sellerAddress) {
+                return true;
+            }
+        }
+        return false;
     }
 }

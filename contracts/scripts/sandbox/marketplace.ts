@@ -18,7 +18,7 @@ async function main() {
   // Define params
   const promptContractAddress = "0xc1Db4070da95988D1251775728a2A0d2edC6bEF4";
   const marketplaceContractAddress =
-    "0x1Be148B230Bcb4E634Be64Ca6134545B59D715Fa";
+    "0x90E4429df67cBc37C9D06d8c4811d13589e8b4d0";
   const marketplaceId = 1;
   const tokenId = 1;
 
