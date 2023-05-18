@@ -18,14 +18,15 @@ export function getSupportedChainConfigs(): ChainConfig[] {
   if (
     process.env.NEXT_PUBLIC_MUMBAI_PROFILE_CONTRACT_ADDRESS &&
     process.env.NEXT_PUBLIC_MUMBAI_PROMPT_CONTRACT_ADDRESS &&
-    process.env.NEXT_PUBLIC_MUMBAI_MARKEPLACE_CONTRACT_ADDRESS
+    process.env.NEXT_PUBLIC_MUMBAI_MARKETPLACE_CONTRACT_ADDRESS
   ) {
     chainConfigs.push({
       chain: polygonMumbai,
       contractAddresses: {
         profile: process.env.NEXT_PUBLIC_MUMBAI_PROFILE_CONTRACT_ADDRESS,
         prompt: process.env.NEXT_PUBLIC_MUMBAI_PROMPT_CONTRACT_ADDRESS,
-        marketplace: process.env.NEXT_PUBLIC_MUMBAI_MARKEPLACE_CONTRACT_ADDRESS,
+        marketplace:
+          process.env.NEXT_PUBLIC_MUMBAI_MARKETPLACE_CONTRACT_ADDRESS,
       },
     });
   }

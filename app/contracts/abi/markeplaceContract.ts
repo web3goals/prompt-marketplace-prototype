@@ -211,6 +211,31 @@ export const markeplaceContractAbi = [
   },
   {
     inputs: [],
+    name: "getSellers",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "sellerAddress",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "soldListings",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct Marketplace.Seller[]",
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "owner",
     outputs: [
       {
