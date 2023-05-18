@@ -1,4 +1,5 @@
 import { DialogContext } from "@/context/dialog";
+import { markeplaceContractAbi } from "@/contracts/abi/markeplaceContract";
 import {
   AlternateEmail,
   Instagram,
@@ -14,9 +15,12 @@ import ProfileUriDataEntity from "entities/uri/ProfileUriDataEntity";
 import { ethers } from "ethers";
 import useUriDataLoader from "hooks/useUriDataLoader";
 import Link from "next/link";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { isAddressesEqual } from "utils/addresses";
-import { chainToSupportedChainProfileContractAddress } from "utils/chains";
+import {
+  chainToSupportedChainMarketplaceContractAddress,
+  chainToSupportedChainProfileContractAddress,
+} from "utils/chains";
 import { addressToShortAddress, stringToAddress } from "utils/converters";
 import { useAccount, useContractRead, useNetwork } from "wagmi";
 import AccountAvatar from "./AccountAvatar";
@@ -30,16 +34,42 @@ export default function AccountProfile(props: { address: string }) {
   const { showDialog, closeDialog } = useContext(DialogContext);
   const { chain } = useNetwork();
   const { address } = useAccount();
+  const [soldPrompts, setSoldPrompts] = useState<number | undefined>();
 
+  /**
+   * Define profile uri data
+   */
   const { data: profileUri } = useContractRead({
     address: chainToSupportedChainProfileContractAddress(chain),
     abi: profileContractAbi,
     functionName: "getURI",
     args: [stringToAddress(props.address) || ethers.constants.AddressZero],
   });
-
   const { data: profileUriData } =
     useUriDataLoader<ProfileUriDataEntity>(profileUri);
+
+  /**
+   * Define sold prompts
+   */
+  const { data: sellers } = useContractRead({
+    address: chainToSupportedChainMarketplaceContractAddress(chain),
+    abi: markeplaceContractAbi,
+    functionName: "getSellers",
+  });
+  useEffect(() => {
+    if (sellers) {
+      for (const seller of sellers) {
+        if (isAddressesEqual(seller.sellerAddress, props.address)) {
+          setSoldPrompts(Number(seller.soldListings));
+          return;
+        }
+      }
+      setSoldPrompts(0);
+    } else {
+      setSoldPrompts(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sellers]);
 
   if (profileUri === "" || profileUriData) {
     return (
@@ -149,8 +179,9 @@ export default function AccountProfile(props: { address: string }) {
             <Typography fontWeight={700} sx={{ mr: 1.5 }}>
               {addressToShortAddress(props.address)}
             </Typography>
-            {/* TODO: Display real number of sold prompts */}
-            <AccountReputation soldPrompts={0} />
+            {soldPrompts !== undefined && (
+              <AccountReputation soldPrompts={soldPrompts} />
+            )}
           </Stack>
         </Stack>
         {/* Owner buttons */}
