@@ -137,7 +137,7 @@ export default function CreatePrompt() {
       ) {
         showToastSuccess("Prompt is created!");
         setIsFormSubmitting(false);
-        router.push(`/prompts/${log[0].args.tokenId.toString()}`);
+        router.push(`/prompts/${log[0].args.tokenId?.toString() || ""}`);
       }
     },
   });
