@@ -119,7 +119,7 @@ async function sendNotification(promptId: string, promptSeller: string) {
       cta: "",
       img: "",
     },
-    channel: "eip155:5:0x4306D7a79265D2cb85Db0c5a55ea5F4f6F73C4B1", // your channel address
+    channel: "eip155:5:0x4306D7a79265D2cb85Db0c5a55ea5F4f6F73C4B1",
     env: ENV.STAGING,
   });
 }
