@@ -44,9 +44,9 @@ To make the marketplace better, it would be great to add:
 
 ## 📃 Contracts
 
-- Profile - 0x84c2B04DC0ec0D9B8cEf2BA11D0c2C455032007A
-- Prompt - 0x3184af92a3c3c4BE1593066DAF90544e7BE9Fed2
-- Marketplace - 0x75cA509E39CbAE08Ca4813E12E0297dbEff98Ae7
+- Prompt - [0x3184af92a3c3c4BE1593066DAF90544e7BE9Fed2](https://mumbai.polygonscan.com/address/0x3184af92a3c3c4BE1593066DAF90544e7BE9Fed2)
+- Profile - [0x84c2B04DC0ec0D9B8cEf2BA11D0c2C455032007A](https://mumbai.polygonscan.com/address/0x84c2B04DC0ec0D9B8cEf2BA11D0c2C455032007A)
+- Marketplace - [0x75cA509E39CbAE08Ca4813E12E0297dbEff98Ae7](https://mumbai.polygonscan.com/address/0x75cA509E39CbAE08Ca4813E12E0297dbEff98Ae7)
 
 ## 🏗️ Architecture
 
