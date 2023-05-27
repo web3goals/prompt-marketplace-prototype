@@ -8,6 +8,7 @@ import {
   chainToSupportedChainPromptContractAddress,
 } from "@/utils/chains";
 import { Dialog, Stack, Typography } from "@mui/material";
+import axios from "axios";
 import { ethers } from "ethers";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -81,6 +82,9 @@ export default function PromptBuyDialog(props: {
   useEffect(() => {
     if (isTransactionSuccess) {
       showToastSuccess("Prompt is bought!");
+      axios.post("/api/notifier/sendNotificationToPromptSeller", {
+        transactionHash: contractWriteData?.hash,
+      });
       router.reload();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
